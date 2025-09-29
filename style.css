@@ -1,0 +1,150 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    background: url('background.png') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+}
+
+.game-container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    margin-bottom: 20px;
+    width: 90%;
+    max-width: 1200px;
+}
+
+h1 {
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 30px;
+}
+
+.photo-display {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    padding: 0 10px;
+}
+
+.photo-card {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    overflow: hidden;
+    padding: 10px;
+    flex: 1;
+    min-width: 280px;
+    max-width: 400px;
+}
+
+.photo-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.photo-card img {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+}
+
+.round-text {
+    font-size: 1.2em;
+    color: white;
+    margin-top: 20px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.controls {
+    margin-top: 20px;
+}
+
+button {
+    padding: 12px 25px;
+    font-size: 1em;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.leaderboard-container {
+    margin-top: 40px;
+    width: 100%;
+    max-width: 600px;
+    background: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    text-align: left;
+    color: white;
+}
+
+.leaderboard-container h2 {
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+#leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#leaderboard-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+#leaderboard-list li:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 5px;
+    object-fit: cover;
+    margin-right: 15px;
+}

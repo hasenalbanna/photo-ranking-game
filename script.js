@@ -1,31 +1,55 @@
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyBPfnLfN2G9XXDzLithx-SvopJd6XiMs1U",
-    authDomain: "photo-ranking-game.firebaseapp.com",
-    databaseURL: "https://photo-ranking-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "photo-ranking-game",
-    storageBucket: "photo-ranking-game.firebasestorage.app",
-    messagingSenderId: "714695496415",
-    appId: "1:714695496415:web:c01da2b0f93d3823f60f6a",
-    measurementId: "G-TH3HDT95ZT"
-};
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBPfnLfN2G9XXDzLithx-SvopJd6XiMs1U",
+        authDomain: "photo-ranking-game.firebaseapp.com",
+        databaseURL: "https://photo-ranking-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "photo-ranking-game",
+        storageBucket: "photo-ranking-game.firebasestorage.app",
+        messagingSenderId: "714695496415",
+        appId: "1:714695496415:web:c01da2b0f93d3823f60f6a",
+        measurementId: "G-TH3HDT95ZT"
+    };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const auth = firebase.auth();
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-// Sign in anonymously
-auth.signInAnonymously().catch(function(error) {
-    console.error("Authentication error:", error);
-});
+    // Initialize the application
+    async function init() {
+        try {
+            await initializeFirebase();
+            initializeEventListeners();
+            renderNextRound();
+        } catch (error) {
+            console.error('Initialization error:', error);
+        }
+    }
 
-// Initialize photos in Firebase
-async function initializeFirebase() {
-    try {
-        console.log('Initializing Firebase...');
-        const photosRef = database.ref('photos');
-        const snapshot = await photosRef.once('value');
+    // Start the application
+    init();
+
+    // --- Game State Variables ---
+    let currentPhotos = [];
+    let roundCount = 0;
+
+    // --- DOM Elements ---
+    const photo1Img = document.getElementById('photo-1-img');
+    const photo2Img = document.getElementById('photo-2-img');
+    const photo1Container = document.getElementById('photo-1-container');
+    const photo2Container = document.getElementById('photo-2-container');
+    const showLeaderboardBtn = document.getElementById('show-leaderboard-btn');
+    const leaderboardContainer = document.getElementById('leaderboard-container');
+    const leaderboardList = document.getElementById('leaderboard-list');
+    const roundNumberSpan = document.getElementById('round-number');
+
+    // Initialize photos in Firebase
+    async function initializeFirebase() {
+        try {
+            console.log('Initializing Firebase...');
+            const photosRef = database.ref('photos');
+            const snapshot = await photosRef.once('value');
         
         // Initialize photos if they don't exist in Firebase
         if (!snapshot.exists()) {
@@ -130,18 +154,31 @@ const leaderboardContainer = document.getElementById('leaderboard-container');
 const leaderboardList = document.getElementById('leaderboard-list');
 const roundNumberSpan = document.getElementById('round-number');
 
-// --- Functions ---
-function getRandomPhoto(excludeId) {
-    // Get a random photo that's not the excluded one
-    const availablePhotos = photos.filter(photo => photo.id !== excludeId);
-    const randomIndex = Math.floor(Math.random() * availablePhotos.length);
-    return availablePhotos[randomIndex];
-}
+    // --- Functions ---
+    function getRandomPhoto(excludeId) {
+        // Get a random photo that's not the excluded one
+        const availablePhotos = photos.filter(photo => photo.id !== excludeId);
+        const randomIndex = Math.floor(Math.random() * availablePhotos.length);
+        return availablePhotos[randomIndex];
+    }
 
-function getTwoRandomPhotos() {
-    // Shuffles the array and gets two unique photos
-    const shuffledPhotos = photos.sort(() => 0.5 - Math.random());
-    return [shuffledPhotos[0], shuffledPhotos[1]];
+    // Initialize event listeners
+    function initializeEventListeners() {
+        photo1Container.addEventListener('click', () => {
+            handleVote(currentPhotos[0].id, 1);
+        });
+
+        photo2Container.addEventListener('click', () => {
+            handleVote(currentPhotos[1].id, 2);
+        });
+
+        showLeaderboardBtn.addEventListener('click', renderLeaderboard);
+    }
+
+    function getTwoRandomPhotos() {
+        // Create a copy of the photos array and shuffle it
+        const shuffled = [...photos].sort(() => Math.random() - 0.5);
+        return [shuffled[0], shuffled[1]];
 }
 
 function renderNextRound() {

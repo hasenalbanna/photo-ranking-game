@@ -9,25 +9,41 @@ body {
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
     text-align: center;
     background: rgba(0, 0, 0, 0.6);
-    min-height: 100vh;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 h1 {
     color: #fff;
-    margin-bottom: 30px;
+    margin: 20px 0;
     text-transform: uppercase;
     letter-spacing: 3px;
     text-shadow: 0 0 10px #00fff2,
                  0 0 20px #00fff2,
                  0 0 30px #00fff2;
     animation: glow 2s ease-in-out infinite alternate;
+    position: relative;
+    z-index: 2;
+}
+
+.game-controls {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px;
 }
 
 @keyframes glow {
@@ -46,23 +62,38 @@ h1 {
 .photos-container {
     display: flex;
     justify-content: space-between;
-    margin: 30px 0;
-    padding: 0 5%;
-    width: 90%;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    flex: 1;
     position: relative;
+    gap: 20px;
 }
 
 .photo-container {
-    width: 45%;
+    height: 80vh;
+    width: 40%;
     cursor: pointer;
     transition: all 0.3s ease;
-    padding: 10px;
+    padding: 20px;
     border-radius: 15px;
     position: relative;
     background: rgba(0, 0, 0, 0.2);
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.3),
                 inset 0 0 15px rgba(0, 255, 255, 0.2);
     animation: neonPulse 2s infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#photo-1-container {
+    margin-left: 5%;
+}
+
+#photo-2-container {
+    margin-right: 5%;
 }
 
 .photo-container:hover {
@@ -87,8 +118,9 @@ h1 {
 }
 
 .photo {
-    width: 100%;
-    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;

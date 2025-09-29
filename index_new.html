@@ -11,7 +11,6 @@
 <body>
     <div class="container">
         <h1>Photo Ranking Game</h1>
-        <p>Round: <span id="round-number">0</span></p>
         
         <div class="photos-container">
             <div id="photo-1-container" class="photo-container">
@@ -22,7 +21,10 @@
             </div>
         </div>
 
-        <button id="show-leaderboard-btn">Show Leaderboard</button>
+        <div class="game-controls">
+            <p>Round: <span id="round-number">0</span></p>
+            <button id="show-leaderboard-btn">Show Leaderboard</button>
+        </div>
 
         <div id="leaderboard-container" style="display: none;">
             <h2>Leaderboard</h2>

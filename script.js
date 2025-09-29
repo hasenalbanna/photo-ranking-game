@@ -1,34 +1,68 @@
-// Wait for DOM to be ready
-document.addEventListener('DOMContentLoaded', function() {
-    // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyBPfnLfN2G9XXDzLithx-SvopJd6XiMs1U",
-        authDomain: "photo-ranking-game.firebaseapp.com",
-        databaseURL: "https://photo-ranking-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "photo-ranking-game",
-        storageBucket: "photo-ranking-game.firebasestorage.app",
-        messagingSenderId: "714695496415",
-        appId: "1:714695496415:web:c01da2b0f93d3823f60f6a",
-        measurementId: "G-TH3HDT95ZT"
-    };
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBPfnLfN2G9XXDzLithx-SvopJd6XiMs1U",
+    authDomain: "photo-ranking-game.firebaseapp.com",
+    databaseURL: "https://photo-ranking-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "photo-ranking-game",
+    storageBucket: "photo-ranking-game.firebasestorage.app",
+    messagingSenderId: "714695496415",
+    appId: "1:714695496415:web:c01da2b0f93d3823f60f6a",
+    measurementId: "G-TH3HDT95ZT"
+};
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
-    // Initialize the application
-    async function init() {
-        try {
-            await initializeFirebase();
-            initializeEventListeners();
-            renderNextRound();
-        } catch (error) {
-            console.error('Initialization error:', error);
-        }
+    // Photo Data
+const photos = [
+    { id: 1, file: './img/photo-1.png', votes: 0 },
+    { id: 2, file: './img/photo-2.png', votes: 0 },
+    { id: 3, file: './img/photo-3.png', votes: 0 },
+    { id: 4, file: './img/photo-4.png', votes: 0 },
+    { id: 5, file: './img/photo-5.png', votes: 0 },
+    { id: 6, file: './img/photo-6.png', votes: 0 },
+    { id: 7, file: './img/photo-7.png', votes: 0 },
+    { id: 8, file: './img/photo-8.png', votes: 0 },
+    { id: 9, file: './img/photo-9.png', votes: 0 },
+    { id: 10, file: './img/photo-10.png', votes: 0 }
+];
+
+// Game State Variables
+let currentPhotos = [];
+let roundCount = 0;
+
+// DOM Elements
+const photo1Img = document.getElementById('photo-1-img');
+const photo2Img = document.getElementById('photo-2-img');
+const photo1Container = document.getElementById('photo-1-container');
+const photo2Container = document.getElementById('photo-2-container');
+const showLeaderboardBtn = document.getElementById('show-leaderboard-btn');
+const leaderboardContainer = document.getElementById('leaderboard-container');
+const leaderboardList = document.getElementById('leaderboard-list');
+const roundNumberSpan = document.getElementById('round-number');
+
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Set up event listeners
+        photo1Container.addEventListener('click', () => {
+            handleVote(currentPhotos[0].id, 1);
+        });
+
+        photo2Container.addEventListener('click', () => {
+            handleVote(currentPhotos[1].id, 2);
+        });
+
+        showLeaderboardBtn.addEventListener('click', renderLeaderboard);
+
+        // Initialize Firebase data and start the game
+        await initializeFirebase();
+        renderNextRound();
+    } catch (error) {
+        console.error('Initialization error:', error);
     }
-
-    // Start the application
-    init();
+});
 
     // --- Game State Variables ---
     let currentPhotos = [];
@@ -44,12 +78,94 @@ document.addEventListener('DOMContentLoaded', function() {
     const leaderboardList = document.getElementById('leaderboard-list');
     const roundNumberSpan = document.getElementById('round-number');
 
-    // Initialize photos in Firebase
-    async function initializeFirebase() {
-        try {
-            console.log('Initializing Firebase...');
-            const photosRef = database.ref('photos');
-            const snapshot = await photosRef.once('value');
+// Game Functions
+function getRandomPhoto(excludeId) {
+    const availablePhotos = photos.filter(photo => photo.id !== excludeId);
+    return availablePhotos[Math.floor(Math.random() * availablePhotos.length)];
+}
+
+function getTwoRandomPhotos() {
+    const shuffled = [...photos].sort(() => Math.random() - 0.5);
+    return [shuffled[0], shuffled[1]];
+}
+
+function selectNewPhotos() {
+    currentPhotos = getTwoRandomPhotos();
+    photo1Img.src = currentPhotos[0].file;
+    photo2Img.src = currentPhotos[1].file;
+}
+
+function renderNextRound() {
+    roundCount++;
+    roundNumberSpan.textContent = roundCount;
+    selectNewPhotos();
+}
+
+async function handleVote(photoId, position) {
+    try {
+        const votedPhoto = photos.find(p => p.id === photoId);
+        if (votedPhoto) {
+            const photoRef = database.ref('photos/' + photoId);
+            const snapshot = await photoRef.once('value');
+            const currentVotes = (snapshot.val()?.votes || 0) + 1;
+            
+            await photoRef.update({
+                votes: currentVotes
+            });
+
+            // Keep the voted photo in its position and get a new opponent
+            if (position === 1) {
+                currentPhotos[1] = getRandomPhoto(photoId);
+                photo2Img.src = currentPhotos[1].file;
+            } else {
+                currentPhotos[0] = getRandomPhoto(photoId);
+                photo1Img.src = currentPhotos[0].file;
+            }
+            
+            roundCount++;
+            roundNumberSpan.textContent = roundCount;
+        }
+    } catch (error) {
+        console.error('Error updating vote:', error);
+    }
+}
+
+function renderLeaderboard() {
+    const photosRef = database.ref('photos');
+    photosRef.once('value', (snapshot) => {
+        const firebasePhotos = [];
+        snapshot.forEach((childSnapshot) => {
+            firebasePhotos.push(childSnapshot.val());
+        });
+
+        const sortedPhotos = firebasePhotos.sort((a, b) => b.votes - a.votes);
+        leaderboardList.innerHTML = '';
+
+        sortedPhotos.forEach((photo, index) => {
+            const listItem = document.createElement('li');
+            const imgElement = document.createElement('img');
+            imgElement.src = photo.file;
+            imgElement.alt = `Rank ${index + 1}`;
+            imgElement.classList.add('leaderboard-image');
+
+            const textElement = document.createElement('span');
+            textElement.textContent = `Rank ${index + 1}: ${photo.votes} votes`;
+
+            listItem.appendChild(imgElement);
+            listItem.appendChild(textElement);
+            leaderboardList.appendChild(listItem);
+        });
+
+        leaderboardContainer.style.display = 'block';
+    });
+}
+
+// Initialize photos in Firebase
+async function initializeFirebase() {
+    try {
+        console.log('Initializing Firebase...');
+        const photosRef = database.ref('photos');
+        const snapshot = await photosRef.once('value');
         
         // Initialize photos if they don't exist in Firebase
         if (!snapshot.exists()) {

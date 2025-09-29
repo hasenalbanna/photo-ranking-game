@@ -120,37 +120,6 @@ button:hover {
     padding-bottom: 100%;
 }
 
-/* Responsive adjustments */
-@media (max-width: 800px) {
-    .photo-card { width: 320px; height: 380px; }
-    .photo-circle { width: 230px; height: 230px; }
-    .photo-container {
-        width: 250px;
-        height: 250px;
-    }
-    .photos-container {
-        gap: 20px;
-    }
-}
-
-@media (max-width: 600px) {
-    .photos-container { flex-direction: column; gap: 18px; }
-    .photo-card { width: 260px; height: 320px; }
-    .photo-circle { width: 200px; height: 200px; }
-    .photo-container {
-        width: 200px;
-        height: 200px;
-    }
-    .photos-container {
-        gap: 15px;
-        padding: 5px;
-    }
-    h1 {
-        font-size: 2em;
-        margin: 20px 0;
-    }
-}
-
 @keyframes glow {
     from {
         text-shadow: 0 0 10px #00fff2,
@@ -164,6 +133,7 @@ button:hover {
     }
 }
 
+/* Updated photos-container for side-by-side display and horizontal scrolling on mobile */
 .photos-container {
     display: flex;
     justify-content: center;
@@ -174,6 +144,8 @@ button:hover {
     max-width: 1000px;
     gap: 60px;
     box-sizing: border-box;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent wrapping */
 }
 
 .photo-container {
@@ -185,9 +157,9 @@ button:hover {
     position: relative;
     background: #1a2133;
     border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block; /* Make cards inline-block for side-by-side behavior */
+    flex-shrink: 0; /* Prevent shrinking */
+    box-sizing: border-box;
 }
 
 .photo-container:hover .photo-circle {
@@ -309,6 +281,7 @@ button:hover {
     background-color: #45a049;
 }
 
+/* Updated leaderboard container for responsiveness and scrolling */
 #leaderboard-container {
     display: none;
     position: fixed;
@@ -319,9 +292,10 @@ button:hover {
     padding: 30px;
     border-radius: 20px;
     box-shadow: 0 0 30px rgba(0, 150, 255, 0.3);
-    max-width: 80%;
+    width: 90%; /* Make it more responsive */
+    max-width: 800px;
     max-height: 80vh;
-    overflow-y: auto;
+    overflow-y: auto; /* Enable vertical scrolling */
     z-index: 100;
 }
 
@@ -365,6 +339,7 @@ button:hover {
 @media (max-width: 600px) {
     .photos-container {
         gap: 20px;
+        justify-content: flex-start; /* Align to the left to enable horizontal scroll */
     }
     .photo-container {
         width: 180px;

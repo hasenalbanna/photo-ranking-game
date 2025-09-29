@@ -13,6 +13,12 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+const auth = firebase.auth();
+
+// Sign in anonymously
+auth.signInAnonymously().catch(function(error) {
+    console.error("Authentication error:", error);
+});
 
 // Initialize photos in Firebase
 async function initializeFirebase() {

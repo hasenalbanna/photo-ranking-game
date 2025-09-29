@@ -22,8 +22,40 @@ const database = getDatabase(app);
 
 // Initialize photos in Firebase
 async function initializeFirebase() {
-    const photosRef = ref(database, 'photos');
-    const snapshot = await get(photosRef);
+    try {
+        console.log('Initializing Firebase...');
+        const photosRef = ref(database, 'photos');
+        const snapshot = await get(photosRef);
+        
+        // Initialize photos if they don't exist in Firebase
+        if (!snapshot.exists()) {
+            console.log('Initializing photos in Firebase...');
+            for (const photo of photos) {
+                await set(ref(database, `photos/${photo.id}`), photo);
+            }
+        }
+        
+        // Start listening for updates
+        onValue(ref(database, 'photos'), (snapshot) => {
+            const firebasePhotos = [];
+            snapshot.forEach((childSnapshot) => {
+                firebasePhotos.push(childSnapshot.val());
+            });
+            // Update local photos array with Firebase data
+            photos.length = 0;
+            photos.push(...firebasePhotos);
+            
+            // Select initial photos if needed
+            if (currentPhotos.length === 0) {
+                selectNewPhotos();
+            }
+        });
+    } catch (error) {
+        console.error('Error initializing Firebase:', error);
+        // If Firebase fails, still try to show photos
+        selectNewPhotos();
+    }
+}
     
     if (!snapshot.exists()) {
         // Initialize each photo in Firebase

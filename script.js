@@ -1,9 +1,4 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, get, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
-
-// Your web app's Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBPfnLfN2G9XXDzLithx-SvopJd6XiMs1U",
     authDomain: "photo-ranking-game.firebaseapp.com",
@@ -16,16 +11,15 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const database = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
 // Initialize photos in Firebase
 async function initializeFirebase() {
     try {
         console.log('Initializing Firebase...');
-        const photosRef = ref(database, 'photos');
-        const snapshot = await get(photosRef);
+        const photosRef = database.ref('photos');
+        const snapshot = await photosRef.once('value');
         
         // Initialize photos if they don't exist in Firebase
         if (!snapshot.exists()) {

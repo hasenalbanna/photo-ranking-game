@@ -31,12 +31,12 @@ async function initializeFirebase() {
         if (!snapshot.exists()) {
             console.log('Initializing photos in Firebase...');
             for (const photo of photos) {
-                await set(ref(database, `photos/${photo.id}`), photo);
+                await photosRef.child(photo.id).set(photo);
             }
         }
         
         // Start listening for updates
-        onValue(ref(database, 'photos'), (snapshot) => {
+        photosRef.on('value', (snapshot) => {
             const firebasePhotos = [];
             snapshot.forEach((childSnapshot) => {
                 firebasePhotos.push(childSnapshot.val());
@@ -186,8 +186,8 @@ async function handleVote(votedPhotoId, position) {
 
 function renderLeaderboard() {
     // Get real-time updates from Firebase
-    const photosRef = ref(database, 'photos');
-    onValue(photosRef, (snapshot) => {
+    const photosRef = database.ref('photos');
+    photosRef.on('value', (snapshot) => {
         const firebasePhotos = [];
         snapshot.forEach((childSnapshot) => {
             firebasePhotos.push(childSnapshot.val());

@@ -1,9 +1,7 @@
-// Spreadsheet ID and API key (you'll need to replace these with your own)
-const SHEET_ID = '1Apo2haOZCDbKcuKSxrmJ8jfLTzmQHVMtJQOInKguzYg';
-const SHEET_NAME = 'Sheet1';
-const API_KEY = 'YOUR_API_KEY';
+// Serverless function URL to update votes (You will get this URL after deployment)
+const API_URL = 'YOUR_SERVERLESS_FUNCTION_URL_HERE'; 
 
-// Photo Data
+// Local photo data (used for displaying images and local vote counts)
 const photos = [
     { id: 1, file: './img/photo-1.png', votes: 0 },
     { id: 2, file: './img/photo-2.png', votes: 0 },
@@ -56,8 +54,8 @@ const roundNumberSpan = document.getElementById('round-number');
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Load initial votes from Google Sheet
-        await loadVotesFromSheet();
+        // Load votes from GitHub Pages JSON file
+        await loadVotes();
         
         // Set up event listeners
         photo1Container.addEventListener('click', () => {
@@ -74,60 +72,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderNextRound();
     } catch (error) {
         console.error('Initialization error:', error);
-        // If Google Sheets fails, still let the game work locally
+        // If loading votes fails, still let the game work locally
         renderNextRound();
     }
 });
 
-// Load votes from Google Sheet
-async function loadVotesFromSheet() {
+// Load votes from GitHub Pages JSON file
+async function loadVotes() {
     try {
-        const response = await fetch(
-            `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`
-        );
+        const response = await fetch('./votes.json');
+        if (!response.ok) {
+            throw new Error('Failed to load votes.json');
+        }
         const data = await response.json();
         
-        if (data.values && data.values.length > 1) {
-            // Skip header row
-            data.values.slice(1).forEach(row => {
-                const id = parseInt(row[0]);
-                const votes = parseInt(row[2]);
-                const photo = photos.find(p => p.id === id);
-                if (photo) {
-                    photo.votes = votes;
-                }
-            });
+        for (const photo of photos) {
+            const photoKey = `photo-${photo.id}`;
+            if (data[photoKey] !== undefined) {
+                photo.votes = data[photoKey];
+            }
         }
     } catch (error) {
         console.error('Error loading votes:', error);
     }
 }
 
-// Update votes in Google Sheet
-async function updateVoteInSheet(photoId, votes) {
+// Update votes by calling the serverless function
+async function updateVote(photoId) {
     try {
-        const row = photos.findIndex(p => p.id === photoId) + 2; // +2 for header row and 0-based index
-        const range = `${SHEET_NAME}!C${row}`;
-        
-        const response = await fetch(
-            `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW&key=${API_KEY}`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    values: [[votes]]
-                })
-            }
-        );
-        
+        const photoKey = `photo-${photoId}`;
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ photo: photoKey })
+        });
+
         if (!response.ok) {
-            throw new Error('Failed to update vote in sheet');
+            throw new Error('Failed to update vote via serverless function');
         }
+
+        console.log('Vote successfully submitted!');
     } catch (error) {
         console.error('Error updating vote:', error);
-        // Game continues even if update fails
     }
 }
 
@@ -160,12 +148,8 @@ async function handleVote(photoId, position) {
         // Increment votes locally
         votedPhoto.votes++;
         
-        // Try to update vote in Google Sheet (but continue even if it fails)
-        try {
-            await updateVoteInSheet(photoId, votedPhoto.votes);
-        } catch (error) {
-            console.error('Failed to update vote in sheet, but continuing locally:', error);
-        }
+        // Asynchronously update vote on the server (doesn't block the game)
+        updateVote(photoId);
         
         // Keep the voted photo in its position and get a new opponent
         if (position === 1) {
@@ -182,25 +166,28 @@ async function handleVote(photoId, position) {
 }
 
 function renderLeaderboard() {
-    // Sort photos by votes in descending order
-    const sortedPhotos = [...photos].sort((a, b) => b.votes - a.votes);
-    leaderboardList.innerHTML = '';
+    // Reload votes to get the most current data before rendering
+    loadVotes().then(() => {
+        const sortedPhotos = [...photos].sort((a, b) => b.votes - a.votes);
+        leaderboardList.innerHTML = '';
 
-    // Create and append list items for each photo
-    sortedPhotos.forEach((photo, index) => {
-        const listItem = document.createElement('li');
-        const imgElement = document.createElement('img');
-        imgElement.src = photo.file;
-        imgElement.alt = `Rank ${index + 1}`;
-        imgElement.classList.add('leaderboard-image');
+        sortedPhotos.forEach((photo, index) => {
+            const listItem = document.createElement('li');
+            const imgElement = document.createElement('img');
+            imgElement.src = photo.file;
+            imgElement.alt = `Rank ${index + 1}`;
+            imgElement.classList.add('leaderboard-image');
 
-        const textElement = document.createElement('span');
-        textElement.textContent = `Rank ${index + 1}: ${photo.votes} votes`;
+            const textElement = document.createElement('span');
+            textElement.textContent = `Rank ${index + 1}: ${photo.votes} votes`;
 
-        listItem.appendChild(imgElement);
-        listItem.appendChild(textElement);
-        leaderboardList.appendChild(listItem);
+            listItem.appendChild(imgElement);
+            listItem.appendChild(textElement);
+            leaderboardList.appendChild(listItem);
+        });
+
+        leaderboardContainer.style.display = 'block';
+    }).catch(error => {
+        console.error('Failed to update leaderboard:', error);
     });
-
-    leaderboardContainer.style.display = 'block';
 }
